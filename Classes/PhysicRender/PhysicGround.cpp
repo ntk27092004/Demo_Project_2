@@ -4,8 +4,12 @@
 
 USING_NS_CC;
 
-void PhysicGround::initializeLines(Node* parent, TMXObjectGroup* objectGroup)
-{
+
+bool PhysicGround::init(TMXObjectGroup* objectGroup) {
+    if (!Node::init()) {
+        return false;
+    }
+
     if (objectGroup) {
         auto objects = objectGroup->getObjects();
         for (const auto& object : objects) {
@@ -18,17 +22,31 @@ void PhysicGround::initializeLines(Node* parent, TMXObjectGroup* objectGroup)
             Vec2 topLeft(x, y + height);
             Vec2 topRight(x + width, y + height);
             auto lineNode = Node::create();
-            auto physicsBody = PhysicsBody::createBox(Size(width, height));
-            physicsBody->setCategoryBitmask(DefineBitmask::GROUND);
-            physicsBody->setCollisionBitmask(DefineBitmask::CHARACTER | DefineBitmask::ENEMY);
-            physicsBody->setContactTestBitmask(DefineBitmask::CHARACTER);
-            physicsBody->setPositionOffset(Vec2(width * 0.5f, height * 0.5f));
-            physicsBody->setDynamic(false);
-            lineNode->setPhysicsBody(physicsBody);
+            auto physicsBodyGround = PhysicsBody::createBox(Size(width, height));
+            physicsBodyGround->setCategoryBitmask(DefineBitmask::GROUND);
+            physicsBodyGround->setCollisionBitmask(DefineBitmask::CHARACTER | DefineBitmask::ENEMY);
+            physicsBodyGround->setContactTestBitmask(DefineBitmask::CHARACTER | DefineBitmask::ENEMY);
+            physicsBodyGround->setPositionOffset(Vec2(width * 0.5f, height * 0.5f));
+            physicsBodyGround->setDynamic(false);
+            lineNode->setPhysicsBody(physicsBodyGround);
             lineNode->setPosition(origin);
             lineNode->setTag(TAG_GROUND);
-            parent->addChild(lineNode);
+            this->addChild(lineNode);
         }
+    }
+
+    return true;
+}
+
+PhysicGround* PhysicGround::create(TMXObjectGroup* objectGroup) {
+    auto ground = new (std::nothrow) PhysicGround();
+    if (ground && ground->init(objectGroup)) {
+        ground->autorelease();
+        return ground;
+    }
+    else {
+        delete ground;
+        return nullptr;
     }
 }
 

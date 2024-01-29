@@ -33,18 +33,20 @@ bool Character::init(EntityInfo* info)
 	_model->runAction(animate);
 	this->addChild(_model);
 
-	auto physicBody = PhysicsBody::createBox(_model->getContentSize() / 3, PhysicsMaterial(0.1f, 1.0f, 0.0f));
-	physicBody->setCategoryBitmask(DefineBitmask::CHARACTER);
-	physicBody->setCollisionBitmask(DefineBitmask::ENEMY | DefineBitmask::GROUND);
-	physicBody->setContactTestBitmask(DefineBitmask::ENEMY | DefineBitmask::GROUND);
-	physicBody->setRotationEnable(false);
-	physicBody->setGravityEnable(true);
-	this->setPhysicsBody(physicBody);
+	physicBodyCharacter = PhysicsBody::createBox(_model->getContentSize() / 3, PhysicsMaterial(0.1f,0, 0.0f));
+	physicBodyCharacter->setCategoryBitmask(DefineBitmask::CHARACTER);
+	physicBodyCharacter->setCollisionBitmask(DefineBitmask::ENEMY | DefineBitmask::GROUND);
+	physicBodyCharacter->setContactTestBitmask(DefineBitmask::ENEMY | DefineBitmask::GROUND);
+	physicBodyCharacter->setRotationEnable(false);
+	physicBodyCharacter->setGravityEnable(true);
+	physicBodyCharacter->setDynamic(true);
+	this->setPhysicsBody(physicBodyCharacter);
+
 
 	auto listener = EventListenerPhysicsContact::create();
 	listener->onContactBegin = CC_CALLBACK_1(Character::callbackOnContactBegin, this);
 	listener->onContactSeparate = CC_CALLBACK_1(Character::callbackOnContactSeparate, this);
-	Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 
 	
 
@@ -106,10 +108,14 @@ bool Character::callbackOnContactBegin(PhysicsContact& contact) {
 	auto target = (nodeA == this) ? (nodeB) : (nodeA); // Lấy đối tượng kia (không phải nhân vật)
 		if (target->getTag() == PhysicGround::TAG_GROUND && target->getPhysicsBody()->getCategoryBitmask() == DefineBitmask::GROUND) {
 			_isOnGround = true;
+			//this->getPhysicsBody()->setGravityEnable(false);
+			//physicBodyCharacter->setGravityEnable(false);
+			
+			
 			
 		}
 
-	return false; // Trả về true để tiếp tục xử lý va chạm
+	return true; // Trả về true để tiếp tục xử lý va chạm
 }
 
 void Character::callbackOnContactSeparate(PhysicsContact& contact) {
@@ -119,13 +125,19 @@ void Character::callbackOnContactSeparate(PhysicsContact& contact) {
 	auto target = (nodeA == this) ? (nodeB) : (nodeA); // Lấy đối tượng kia (không phải nhân vật)
 	if (target->getTag() == PhysicGround::TAG_GROUND && target->getPhysicsBody()->getCategoryBitmask() & DefineBitmask::GROUND) {
 		_isOnGround = false;
+		log("in the Air");
 	}
 }
 
 void Character::update(float dt) {
 	if (_isOnGround) {
 		log("Character is on the ground");
-		this->getPhysicsBody()->setGravityEnable(false);
+		//physicBodyCharacter->setVelocity(Vec2::ZERO);
+		//this->getPhysicsBody()->applyImpulse(Vec2(0, 20000.0f));
+	}
+	else
+	{
+		physicBodyCharacter->setDynamic(true);
 	}
 }
 

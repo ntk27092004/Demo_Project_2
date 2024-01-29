@@ -124,7 +124,9 @@ bool HelloWorld::init()
 	KeyboardInput::getInstance()->addKey(EventKeyboard::KeyCode::KEY_SPACE);
 
 	auto objLine = _gameMap->getObjectGroup("PhysicLine");
-	PhysicGround::initializeLines(this, objLine);
+	//PhysicGround::initializeLines(this, objLine);
+	auto ground = PhysicGround::create(objLine);
+	this->addChild(ground);
 
 
 		auto listener = EventListenerMouse::create();

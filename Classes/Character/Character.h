@@ -20,6 +20,7 @@ private:
     bool init(EntityInfo* info) override;
     bool loadAnimations() override;
     StateMachine* _stateMachine;
+    PhysicsBody* physicBodyCharacter;
 protected:
     bool callbackOnContactBegin(PhysicsContact& contact);
     void callbackOnContactSeparate(PhysicsContact& contact);
